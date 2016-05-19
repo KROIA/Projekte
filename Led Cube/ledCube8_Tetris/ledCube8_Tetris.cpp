@@ -144,7 +144,7 @@ void ledCube8_Tetris::init()
 		startTime 				= 0;
 		time					= 0;
 		shiftTime 				= 1000;
-		activeObjectA 			= random(-1,8);
+		activeObjectA 			= random(0,7);
 		score					= 0;
 		rotationAmount			= 0;
 		shiftDownAmount 		= 0;
@@ -171,7 +171,7 @@ void ledCube8_Tetris::run()
 		if((time -startTime) > shiftTime)
 		{
 			//Serial.println(score);
-			activeObjectA = random(0,8);
+			activeObjectA = random(0,7);
 			//Serial.println(activeObjectA);
 			/*Serial.println(shiftDownAmount);
 			Serial.println(shiftLeftAmount);
