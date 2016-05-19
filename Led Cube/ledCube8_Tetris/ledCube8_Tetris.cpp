@@ -1,7 +1,7 @@
 //==========================================LED CUBE TETRIS=================== 
 // Autor: 									Alex Krieg
-// Erstellt:								14.5.16
-// Version 									1.0.0
+// Erstellt:								19.5.16
+// Version 									2.0.0
 // Kompatibel mit den versionen: 			ledCube9.h : 3.0.3 BUILD
 // Funktionen:								*****
 
@@ -16,43 +16,32 @@ ledCube8_Tetris::ledCube8_Tetris(byte pins[])
 {
 	
 		 cube = new LedCube8;
-		 but1P1 = new Button(pins[0],activeHigh);
-		 but2P1 = new Button(pins[1],activeHigh);
-		 but3P1 = new Button(pins[2],activeHigh);
-		 but4P1 = new Button(pins[3],activeHigh);
-		 but5P1 = new Button(pins[4],activeHigh);
-		 but6P1 = new Button(pins[5],activeHigh);
-		 
-		 but1P2 = new Button(pins[6],activeHigh);
-		 but2P2 = new Button(pins[7],activeHigh);
-		 but3P2 = new Button(pins[8],activeHigh);
-		 but4P2 = new Button(pins[9],activeHigh);
-		 but5P2 = new Button(pins[10],activeHigh);
-		 but6P2 = new Button(pins[11],activeHigh);
+		 but1P = new Button(pins[0],activeHigh);
+		 but2P = new Button(pins[1],activeHigh);
+		 but3P = new Button(pins[2],activeHigh);
+		 but4P = new Button(pins[3],activeHigh);
 		 
 
-		but1P1->init();
-		but2P1->init();
-		but3P1->init();
-		but4P1->init();
-		but5P1->init();
-		but6P1->init();
-		
-		but1P2->init();
-		but2P2->init();
-		but3P2->init();
-		but4P2->init();
-		but5P2->init();
-		but6P2->init();
+		but1P->init();
+		but2P->init();
+		but3P->init();
+		but4P->init();
 		
 		Wire.begin();
 		cube->time(1);
 		
-		startTime 	= 0;
-		time		= 0;
-		shiftTime 	= 1000;
-		activeObjectA = random(-1,8);
-		score		= 0;
+		
+		
+}
+ledCube8_Tetris::~ledCube8_Tetris()
+{
+	delete cube;
+}
+
+
+
+void ledCube8_Tetris::init()
+{	
 		cubeData = {
 		0,0,0,0,0,0,0,0,
 			0,0,0,0,0,0,0,0,
@@ -73,8 +62,6 @@ ledCube8_Tetris::ledCube8_Tetris(byte pins[])
 			0,0,0,0,0,0,0,0,
 			0,0,0,0,0,0,0,0
 		};
-		activeObjectShifted = cubeData;
-		activeObjectShiftedX = activeObjectShifted;
 		objects[0]  ={
 			
 		0,0,0,0,0,0,0,0,	
@@ -153,255 +140,352 @@ ledCube8_Tetris::ledCube8_Tetris(byte pins[])
 			0,0,0,0,0,0,0,0
 		};
 		
-		activeObject = objects[0];
-		shiftDownAmount = 0;
-		shiftLeftAmount = 3;
 		
-}
-ledCube8_Tetris::~ledCube8_Tetris()
-{
-	delete cube;
-}
-
-
-
-void ledCube8_Tetris::init()
-{	
-	
-	
-	
-	
+		startTime 				= 0;
+		time					= 0;
+		shiftTime 				= 1000;
+		activeObjectA 			= random(-1,8);
+		score					= 0;
+		rotationAmount			= 0;
+		shiftDownAmount 		= 0;
+		shiftLeftAmount 		= 3;
+		
+		activeObject1	= objects[activeObjectA];
+		activeObject2	= cubeData;
+		activeObject3 	= cubeData;
 }
 
 void ledCube8_Tetris::run()
 {
 	startTime = millis();
 	init();
-	bool test = false;
 	while(true)
 	{
-		send();
 		time = millis();
+		
+		but1P->checkButton();
+		but2P->checkButton();
+		but3P->checkButton();
+		but4P->checkButton();
+		
 		if((time -startTime) > shiftTime)
 		{
-			Serial.println(score);
-			activeObjectA = random(-1,8);
+			//Serial.println(score);
+			activeObjectA = random(0,8);
+			//Serial.println(activeObjectA);
+			/*Serial.println(shiftDownAmount);
+			Serial.println(shiftLeftAmount);
+			Serial.println(rotationAmount);*/
+			//Serial.println("");
 			startTime = time;
-			shiftDownAmount++;
-			if(activeObjectShifted.CA1  == 1 ||
-	  activeObjectShifted.CB1  == 1 ||
-	  activeObjectShifted.CC1  == 1 ||
-	  activeObjectShifted.CD1  == 1 ||
-	  activeObjectShifted.CE1  == 1 ||
-	  activeObjectShifted.CF1  == 1 ||
-	  activeObjectShifted.CG1  == 1 ||
-	  activeObjectShifted.CH1  == 1 )
-	  {
-		  test = true;
-	  }
-	  else
-	  {
-		  test = false;
-	  }
-			activeObjectShifted = cube->getShiftCubeDown(1,true,activeObjectShifted);
-			if(checkForCollision()|| test)
+			//if(shiftDownAmount < 6)
 			{
-				{
-					 if(shiftDownAmount ==1 )
-					 {
-						 stop();
-					 }
-					 activeObjectShifted = cube->getShiftCubeUp(1,true,activeObjectShifted);
-					 cubeTerain = cube->add(activeObjectShifted,cubeTerain);
-					 shiftDownAmount = 0;
-					 activeObject = objects[activeObjectA];
-					 shiftLeftAmount = 3;
-					 score++;
+				shiftDownAmount++;
+			}
+			/*else
+			{
+				shiftDownAmount = 0;
+				cubeTerain 		= cube->add(cubeTerain,activeObject3);
+				activeObject1 	= objects[activeObjectA];
+			}*/
+			//calculate();
+			if(checkForCollision(1))
+			{
+				/*shiftDownAmount--;
+				calculate();*/
+				
+				shiftDownAmount = 0;
+				cubeTerain 		= cube->add(cubeTerain,activeObject3);
+				activeObject1 	= objects[activeObjectA];
+				
+				
+				
+				
+				 if(	 
+					 cubeTerain.CA8 && activeObject3.CA8  == 1 ||
+					 cubeTerain.CB8 && activeObject3.CB8  == 1 ||
+					 cubeTerain.CC8 && activeObject3.CC8  == 1 ||
+					 cubeTerain.CD8 && activeObject3.CD8  == 1 ||
+					 cubeTerain.CE8 && activeObject3.CE8  == 1 ||
+					 cubeTerain.CF8 && activeObject3.CF8  == 1 ||
+					 cubeTerain.CG8 && activeObject3.CG8  == 1 ||
+					 cubeTerain.CH8 && activeObject3.CH8  == 1 
+				 )
+				 {
+					 Serial.println("--------------------------");
+					 Serial.print("Score: ");
+					 Serial.println(score);
+					 Serial.println("--------------------------");
+					 init();
+					 send();
+					 stop();
 				 }
+				// activeObject3	= cube->getShiftCubeUp(1,true,activeObject3);
+				// cubeTerain 			= cube->add(activeObject3,cubeTerain);
+				 shiftDownAmount 		= 0;
+				 shiftLeftAmount 		= 3;
+				 rotationAmount			= 0;
+				 activeObject1 			= objects[activeObjectA];
+				 
+				 score++;
 				 checkForDelete();
 			}
-			//activeObjectShifted = cube->getShiftCubeUp(1,true,activeObjectShifted);
 			calculate();
+			
 		}
 		//checkForDelete();
-		but1P1->checkButton();
-		but2P1->checkButton();
-		but3P1->checkButton();
-		but4P1->checkButton();
-		but5P1->checkButton();
-		but6P1->checkButton();
 		
-		but1P2->checkButton();
-		but2P2->checkButton();
-		but3P2->checkButton();
-		but4P2->checkButton();
-		but5P2->checkButton();
-		but6P2->checkButton();
+		send();
+		
+		
 	}
 }
 void ledCube8_Tetris::stop()
 {
-
-		
-	
-	startTime = millis();
 	while(true)
 	{
-		time = millis();
-		if((time - startTime) > 5000)
-		{
-		startTime 	= 0;
-		time		= 0;
-		shiftTime 	= 1000;
-		activeObjectA = random(-1,8);
-		score		= 0;
-		cubeData = {
-		0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0		
-		};
-		cubeTerain = {
-			0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0
-		};
-		activeObjectShifted = cubeData;
-		activeObjectShiftedX = activeObjectShifted;
-		shiftDownAmount = 0;
-		shiftLeftAmount = 3;
-		send();
-		run();
-		}
+		delay(2000);
+		return;
 	}
 }
 void ledCube8_Tetris::calculate()
 {
-	
+	activeObject2 = cube->getRotate(rotationAmount,activeObject1);
 	if(shiftDownAmount < 3)
 	{
-		activeObjectShifted = cube->getShiftCubeUp(3-shiftDownAmount,false,activeObject);
+		activeObject3 = cube->getShiftCubeUp(3-shiftDownAmount,false,activeObject2);
 	}
 	else
 	{
-		activeObjectShifted = cube->getShiftCubeDown(shiftDownAmount-3,false,activeObject);
+		activeObject3 = cube->getShiftCubeDown(shiftDownAmount-3,false,activeObject2);
 	}
 	if(shiftLeftAmount < 3)
 	{
-		activeObjectShifted = cube->getShiftCubeRight(3-shiftLeftAmount,false,activeObjectShifted);
+		activeObject3 = cube->getShiftCubeRight(3-shiftLeftAmount,false,activeObject3);
 	}
 	else
 	{
-		activeObjectShifted = cube->getShiftCubeLeft(shiftLeftAmount-3,false,activeObjectShifted);
+		activeObject3 = cube->getShiftCubeLeft(shiftLeftAmount-3,false,activeObject3);
 	}
-	cubeData = cube->add(cubeTerain,activeObjectShifted);
-	//cubeData.CA8 = score;
-	send();
+	cubeData = cube->add(cubeTerain , activeObject3);
+	//cubeData = activeObject1;
 }
 
-bool ledCube8_Tetris::checkForCollision()
+bool ledCube8_Tetris::checkForCollision(int mode)
 {
+
+
+	CUBEDATACUBE vergleich	 = activeObject3;
+	CUBEDATACUBE vergleichTerain = cubeTerain;
 	
-	if(
-	 cubeTerain.CA1 && activeObjectShifted.CA1  == 1 ||
-	 cubeTerain.CB1 && activeObjectShifted.CB1  == 1 ||
-	 cubeTerain.CC1 && activeObjectShifted.CC1  == 1 ||
-	 cubeTerain.CD1 && activeObjectShifted.CD1  == 1 ||
-	 cubeTerain.CE1 && activeObjectShifted.CE1  == 1 ||
-	 cubeTerain.CF1 && activeObjectShifted.CF1  == 1 ||
-	 cubeTerain.CG1 && activeObjectShifted.CG1  == 1 ||
-	 cubeTerain.CH1 && activeObjectShifted.CH1  == 1 ||
-	 
-	 cubeTerain.CA2 && activeObjectShifted.CA2  == 1 ||
-	 cubeTerain.CB2 && activeObjectShifted.CB2  == 1 ||
-	 cubeTerain.CC2 && activeObjectShifted.CC2  == 1 ||
-	 cubeTerain.CD2 && activeObjectShifted.CD2  == 1 ||
-	 cubeTerain.CE2 && activeObjectShifted.CE2  == 1 ||
-	 cubeTerain.CF2 && activeObjectShifted.CF2  == 1 ||
-	 cubeTerain.CG2 && activeObjectShifted.CG2  == 1 ||
-	 cubeTerain.CH2 && activeObjectShifted.CH2  == 1 ||
-	 
-	 cubeTerain.CA3 && activeObjectShifted.CA3  == 1 ||
-	 cubeTerain.CB3 && activeObjectShifted.CB3  == 1 ||
-	 cubeTerain.CC3 && activeObjectShifted.CC3  == 1 ||
-	 cubeTerain.CD3 && activeObjectShifted.CD3  == 1 ||
-	 cubeTerain.CE3 && activeObjectShifted.CE3  == 1 ||
-	 cubeTerain.CF3 && activeObjectShifted.CF3  == 1 ||
-	 cubeTerain.CG3 && activeObjectShifted.CG3  == 1 ||
-	 cubeTerain.CH3 && activeObjectShifted.CH3  == 1 ||
-	 
-	 cubeTerain.CA4 && activeObjectShifted.CA4  == 1 ||
-	 cubeTerain.CB4 && activeObjectShifted.CB4  == 1 ||
-	 cubeTerain.CC4 && activeObjectShifted.CC4  == 1 ||
-	 cubeTerain.CD4 && activeObjectShifted.CD4  == 1 ||
-	 cubeTerain.CE4 && activeObjectShifted.CE4  == 1 ||
-	 cubeTerain.CF4 && activeObjectShifted.CF4  == 1 ||
-	 cubeTerain.CG4 && activeObjectShifted.CG4  == 1 ||
-	 cubeTerain.CH4 && activeObjectShifted.CH4  == 1 ||
-	 
-	 cubeTerain.CA5 && activeObjectShifted.CA5  == 1 ||
-	 cubeTerain.CB5 && activeObjectShifted.CB5  == 1 ||
-	 cubeTerain.CC5 && activeObjectShifted.CC5  == 1 ||
-	 cubeTerain.CD5 && activeObjectShifted.CD5  == 1 ||
-	 cubeTerain.CE5 && activeObjectShifted.CE5  == 1 ||
-	 cubeTerain.CF5 && activeObjectShifted.CF5  == 1 ||
-	 cubeTerain.CG5 && activeObjectShifted.CG5  == 1 ||
-	 cubeTerain.CH5 && activeObjectShifted.CH5  == 1 ||
-	 
-	 cubeTerain.CA6 && activeObjectShifted.CA6  == 1 ||
-	 cubeTerain.CB6 && activeObjectShifted.CB6  == 1 ||
-	 cubeTerain.CC6 && activeObjectShifted.CC6  == 1 ||
-	 cubeTerain.CD6 && activeObjectShifted.CD6  == 1 ||
-	 cubeTerain.CE6 && activeObjectShifted.CE6  == 1 ||
-	 cubeTerain.CF6 && activeObjectShifted.CF6  == 1 ||
-	 cubeTerain.CG6 && activeObjectShifted.CG6  == 1 ||
-	 cubeTerain.CH6 && activeObjectShifted.CH6  == 1 ||
-	 
-	 cubeTerain.CA7 && activeObjectShifted.CA7  == 1 ||
-	 cubeTerain.CB7 && activeObjectShifted.CB7  == 1 ||
-	 cubeTerain.CC7 && activeObjectShifted.CC7  == 1 ||
-	 cubeTerain.CD7 && activeObjectShifted.CD7  == 1 ||
-	 cubeTerain.CE7 && activeObjectShifted.CE7  == 1 ||
-	 cubeTerain.CF7 && activeObjectShifted.CF7  == 1 ||
-	 cubeTerain.CG7 && activeObjectShifted.CG7  == 1 ||
-	 cubeTerain.CH7 && activeObjectShifted.CH7  == 1 ||
-	 
-	 cubeTerain.CA8 && activeObjectShifted.CA8  == 1 ||
-	 cubeTerain.CB8 && activeObjectShifted.CB8  == 1 ||
-	 cubeTerain.CC8 && activeObjectShifted.CC8  == 1 ||
-	 cubeTerain.CD8 && activeObjectShifted.CD8  == 1 ||
-	 cubeTerain.CE8 && activeObjectShifted.CE8  == 1 ||
-	 cubeTerain.CF8 && activeObjectShifted.CF8  == 1 ||
-	 cubeTerain.CG8 && activeObjectShifted.CG8  == 1 ||
-	 cubeTerain.CH8 && activeObjectShifted.CH8  == 1 
-	 
-	  
-	 )
-	 {
-		/* if(shiftDownAmount ==1 )
+	
+	if((vergleich.CA1  == 1 ||
+		vergleich.CB1  == 1 ||
+		vergleich.CC1  == 1 ||
+		vergleich.CD1  == 1 ||
+		vergleich.CE1  == 1 ||
+		vergleich.CF1  == 1 ||
+		vergleich.CG1  == 1 ||
+		vergleich.CH1  == 1 )
+		&& (mode == 1))
+	{
+		return true;
+	}
+	
+	for(int i=0;i<2;i++)
+	{
+		vergleich	 	= activeObject3;
+		
+		
+		switch(mode)
+		{
+			case 1:
+			{
+				if(i==0)
+				{
+				vergleich = cube->getShiftCubeDown(1,true,activeObject3);
+				}
+				break;
+			}
+			case 2:
+			{
+				if(i==0)
+				{
+				vergleich = cube->getShiftCubeLeft(1,true,activeObject3);
+				}
+				if(i==1)
+				{
+					
+					vergleichTerain = {
+				
+				
+				
+			1,0,0,0,0,0,0,0,	
+			1,0,0,0,0,0,0,0,	
+			1,0,0,0,0,0,0,0,	
+			1,0,0,0,0,0,0,0,	
+			1,0,0,0,0,0,0,0,	
+			1,0,0,0,0,0,0,0,	
+			1,0,0,0,0,0,0,0,	
+			1,0,0,0,0,0,0,0
+			};
+					//vergleichTerain = vergleichTerain;
+					vergleich = cube->getShiftCubeRight(1,false,vergleich);
+				}
+				break;
+			}
+			case 3:
+			{
+				if(i==0)
+				{
+				vergleich = cube->getShiftCubeRight(1,true,activeObject3);
+				}
+				if(i==1)
+				{
+					
+					vergleichTerain = {
+				
+				
+				
+			0,0,0,0,0,0,0,1,
+			0,0,0,0,0,0,0,1,
+			0,0,0,0,0,0,0,1,
+			0,0,0,0,0,0,0,1,
+			0,0,0,0,0,0,0,1,
+			0,0,0,0,0,0,0,1,
+			0,0,0,0,0,0,0,1,
+			0,0,0,0,0,0,0,1
+			};
+					//vergleichTerain = vergleichTerain;
+					vergleich = cube->getShiftCubeLeft(1,false,vergleich);
+				}
+				break;
+			}
+			case 4:
+			{
+				//if(i==0)
+				{
+				vergleich = cube->getRotate(1,activeObject1);
+				if(shiftDownAmount < 3)
+				{
+					vergleich = cube->getShiftCubeUp(3-shiftDownAmount,false,vergleich);
+				}
+				else
+				{
+					vergleich = cube->getShiftCubeDown(shiftDownAmount-3,false,vergleich);
+				}
+				if(shiftLeftAmount < 3)
+				{
+					vergleich = cube->getShiftCubeRight(3-shiftLeftAmount,false,vergleich);
+				}
+				else
+				{
+					vergleich = cube->getShiftCubeLeft(shiftLeftAmount-3,false,vergleich);
+				}
+				}
+				if(i==1)
+				{
+					vergleichTerain = cube->getShiftCubeRight(7,false,cube->getCube());
+					vergleich = cube->getShiftCubeLeft(1,false,vergleich);
+				}
+			break;
+			}
+		}
+		 
+		
+		
+		
+		
+		if(
+		 vergleichTerain.CA1 && vergleich.CA1  >= 1 ||
+		 vergleichTerain.CB1 && vergleich.CB1  >= 1 ||
+		 vergleichTerain.CC1 && vergleich.CC1  >= 1 ||
+		 vergleichTerain.CD1 && vergleich.CD1  >= 1 ||
+		 vergleichTerain.CE1 && vergleich.CE1  >= 1 ||
+		 vergleichTerain.CF1 && vergleich.CF1  >= 1 ||
+		 vergleichTerain.CG1 && vergleich.CG1  >= 1 ||
+		 vergleichTerain.CH1 && vergleich.CH1  >= 1 ||
+		 
+		 vergleichTerain.CA2 && vergleich.CA2  >= 1 ||
+		 vergleichTerain.CB2 && vergleich.CB2  >= 1 ||
+		 vergleichTerain.CC2 && vergleich.CC2  >= 1 ||
+		 vergleichTerain.CD2 && vergleich.CD2  >= 1 ||
+		 vergleichTerain.CE2 && vergleich.CE2  >= 1 ||
+		 vergleichTerain.CF2 && vergleich.CF2  >= 1 ||
+		 vergleichTerain.CG2 && vergleich.CG2  >= 1 ||
+		 vergleichTerain.CH2 && vergleich.CH2  >= 1 ||
+		 
+		 vergleichTerain.CA3 && vergleich.CA3  >= 1 ||
+		 vergleichTerain.CB3 && vergleich.CB3  >= 1 ||
+		 vergleichTerain.CC3 && vergleich.CC3  >= 1 ||
+		 vergleichTerain.CD3 && vergleich.CD3  >= 1 ||
+		 vergleichTerain.CE3 && vergleich.CE3  >= 1 ||
+		 vergleichTerain.CF3 && vergleich.CF3  >= 1 ||
+		 vergleichTerain.CG3 && vergleich.CG3  >= 1 ||
+		 vergleichTerain.CH3 && vergleich.CH3  >= 1 ||
+		 
+		 vergleichTerain.CA4 && vergleich.CA4  >= 1 ||
+		 vergleichTerain.CB4 && vergleich.CB4  >= 1 ||
+		 vergleichTerain.CC4 && vergleich.CC4  >= 1 ||
+		 vergleichTerain.CD4 && vergleich.CD4  >= 1 ||
+		 vergleichTerain.CE4 && vergleich.CE4  >= 1 ||
+		 vergleichTerain.CF4 && vergleich.CF4  >= 1 ||
+		 vergleichTerain.CG4 && vergleich.CG4  >= 1 ||
+		 vergleichTerain.CH4 && vergleich.CH4  >= 1 ||
+		 
+		 vergleichTerain.CA5 && vergleich.CA5  >= 1 ||
+		 vergleichTerain.CB5 && vergleich.CB5  >= 1 ||
+		 vergleichTerain.CC5 && vergleich.CC5  >= 1 ||
+		 vergleichTerain.CD5 && vergleich.CD5  >= 1 ||
+		 vergleichTerain.CE5 && vergleich.CE5  >= 1 ||
+		 vergleichTerain.CF5 && vergleich.CF5  >= 1 ||
+		 vergleichTerain.CG5 && vergleich.CG5  >= 1 ||
+		 vergleichTerain.CH5 && vergleich.CH5  >= 1 ||
+		 
+		 vergleichTerain.CA6 && vergleich.CA6  >= 1 ||
+		 vergleichTerain.CB6 && vergleich.CB6  >= 1 ||
+		 vergleichTerain.CC6 && vergleich.CC6  >= 1 ||
+		 vergleichTerain.CD6 && vergleich.CD6  >= 1 ||
+		 vergleichTerain.CE6 && vergleich.CE6  >= 1 ||
+		 vergleichTerain.CF6 && vergleich.CF6  >= 1 ||
+		 vergleichTerain.CG6 && vergleich.CG6  >= 1 ||
+		 vergleichTerain.CH6 && vergleich.CH6  >= 1 ||
+		 
+		 vergleichTerain.CA7 && vergleich.CA7  >= 1 ||
+		 vergleichTerain.CB7 && vergleich.CB7  >= 1 ||
+		 vergleichTerain.CC7 && vergleich.CC7  >= 1 ||
+		 vergleichTerain.CD7 && vergleich.CD7  >= 1 ||
+		 vergleichTerain.CE7 && vergleich.CE7  >= 1 ||
+		 vergleichTerain.CF7 && vergleich.CF7  >= 1 ||
+		 vergleichTerain.CG7 && vergleich.CG7  >= 1 ||
+		 vergleichTerain.CH7 && vergleich.CH7  >= 1 ||
+		 
+		 vergleichTerain.CA8 && vergleich.CA8  >= 1 ||
+		 vergleichTerain.CB8 && vergleich.CB8  >= 1 ||
+		 vergleichTerain.CC8 && vergleich.CC8  >= 1 ||
+		 vergleichTerain.CD8 && vergleich.CD8  >= 1 ||
+		 vergleichTerain.CE8 && vergleich.CE8  >= 1 ||
+		 vergleichTerain.CF8 && vergleich.CF8  >= 1 ||
+		 vergleichTerain.CG8 && vergleich.CG8  >= 1 ||
+		 vergleichTerain.CH8 && vergleich.CH8  >= 1   
+		 )
 		 {
-			 stop();
-		 }*/
-		 //activeObjectShifted = cube->getShiftCubeUp(1,true,activeObjectShifted);
-		 //cubeTerain = cube->add(activeObjectShifted,cubeTerain);
-		// shiftDownAmount = 0;
-		 //activeObject = objects[1];
-		 //shiftLeftAmount = 3;
-		 return true;
-	 }
-	 else
-	 {
-		 return false;
-	 }
+			/* if(shiftDownAmount ==1 )
+			 {
+				 stop();
+			 }*/
+			 //activeObject3 = cube->getShiftCubeUp(1,true,activeObject3);
+			 //cubeTerain = cube->add(activeObject3,cubeTerain);
+			// shiftDownAmount = 0;
+			 //activeObject = objects[1];
+			 //shiftLeftAmount = 3;
+			 return true;
+		 }
+		 else
+		 {
+			 return false;
+		 }
+	}
 	 /*if(
 	 cubeTerain.CA1 == 1 &&
 	 cubeTerain.CB1 == 1 &&
@@ -442,7 +526,7 @@ void ledCube8_Tetris::checkForDelete()
 	 {
 		 TERAIN = cube->getShiftCubeDown(1,false,TERAIN);
 	 }
-	/* if(
+	 if(
 	 cubeTerain.CA2 == 1 &&
 	 cubeTerain.CB2 == 1 &&
 	 cubeTerain.CC2 == 1 &&
@@ -792,7 +876,7 @@ void ledCube8_Tetris::checkForDelete()
 		TERAIN.CF7 = cubeTerain.CF7;
 		TERAIN.CG7 = cubeTerain.CG7;
 		TERAIN.CH7 = cubeTerain.CH7;
-	 }*/
+	 }
 
 
 	 
@@ -892,58 +976,95 @@ void ledCube8_Tetris::send()
 }
 //===========================BUTTONS========================================
 //===========================Player1========================================
-void ledCube8_Tetris::button1Player1()
+void ledCube8_Tetris::button1Player()
 {
-	
+	while(checkForCollision(1) == false)
+	{
+		shiftDownAmount++;
+		calculate();
+	}
 }
-void ledCube8_Tetris::button2Player1()
+void ledCube8_Tetris::button2Player()
 {
-	
-}
-void ledCube8_Tetris::button3Player1()
-{   
-activeObjectShifted = cube->getShiftCubeLeft(1,true,activeObjectShifted);
-	if(checkForCollision())
-	 {
-		 activeObjectShifted = cube->getShiftCubeRight(1,true,activeObjectShifted);
-		// cubeTerain = cube->add(activeObjectShifted,cubeTerain);
-		 //shiftDownAmount = 0;
-		 //activeObject = objects[1];
-		 //shiftLeftAmount = 3;
-	 }
-	 else{
+	if(checkForCollision(2))
+	{
+		
+	}
+	else
+	{
 		 shiftLeftAmount++;
-	 }
+		 calculate();
+	}
 	
-	calculate();
+	
 }
-void ledCube8_Tetris::button4Player1()
-{
-	activeObjectShifted = cube->getShiftCubeRight(1,true,activeObjectShifted);
-	if(checkForCollision())
+void ledCube8_Tetris::button3Player()
+{   
+//activeObject3 = cube->getShiftCubeLeft(1,true,activeObject3);
+	/*if(checkForCollision())
 	 {
-		 activeObjectShifted = cube->getShiftCubeLeft(1,true,activeObjectShifted);
-		// cubeTerain = cube->add(activeObjectShifted,cubeTerain);
+		 //activeObject3 = cube->getShiftCubeRight(1,true,activeObject3);
+		// cubeTerain = cube->add(activeObject3,cubeTerain);
 		 //shiftDownAmount = 0;
 		 //activeObject = objects[1];
 		 //shiftLeftAmount = 3;
 	 }
-	 else{
+	 else*/
+	 if(checkForCollision(3))
+	{
+		
+	}
+	else
+	{
 		 shiftLeftAmount--;
-	 }
-	calculate();
+		 calculate();
+	}
+	
 }
-void ledCube8_Tetris::button5Player1()
+void ledCube8_Tetris::button4Player()
+{
+	/*activeObject3 = cube->getShiftCubeRight(1,true,activeObject3);
+	if(checkForCollision())
+	 {
+		 activeObject3 = cube->getShiftCubeLeft(1,true,activeObject3);
+		// cubeTerain = cube->add(activeObject3,cubeTerain);
+		 //shiftDownAmount = 0;
+		 //activeObject = objects[1];
+		 //shiftLeftAmount = 3;
+	 }
+	 else*/
+	 
+	 
+	 if(checkForCollision(4))
+	 {
+		 
+	 }
+	 else
+	 {
+		 rotationAmount++;
+		  if(rotationAmount > 3)
+			 {
+				rotationAmount = 0;
+			 }
+		 calculate();
+	 }
+	 
+	
+	 
+}
+/*void ledCube8_Tetris::button5Player()
 {
 	activeObject = cube->getRotate(1,activeObject);
 	calculate();
 }
-void ledCube8_Tetris::button6Player1()
+void ledCube8_Tetris::button6Player()
 {
 	
+	
 }
+*/
 //===============================Player2=====================================
-
+/*
 void ledCube8_Tetris::button1Player2()
 {
 	
@@ -968,4 +1089,4 @@ void ledCube8_Tetris::button5Player2()
 void ledCube8_Tetris::button6Player2()
 {
 	
-}
+}*/
